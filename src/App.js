@@ -1,23 +1,41 @@
 import logo from './logo.svg';
 import './App.css';
+import Navbar from './components/Navbar';
+import CountriesList from './components/CountriesList';
+import { Route, Routes } from 'react-router-dom';
+import CountryDetails from './components/CountryDetails';
+import { useState, useEffect } from 'react';
 
-function App() {
+// for the fetch iteration we don't need the countries prop anymore
+function App(/* { countries } */) {
+  const [countries, setCountries] = useState([])
+
+  useEffect(() => {
+    fetch('https://ih-countries-api.herokuapp.com/countries')
+      .then(response => response.json())
+      // sort the countries by name
+      .then(data => data.sort((a, b) => a.name.common.localeCompare(b.name.common)))
+      .then(data => setCountries(data))
+  }, [])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Navbar />
+      {countries.length === 0 ? <h1>Loading...</h1> :
+        <div className='container'>
+          <div className="row">
+            <div className="col-md-7">
+              <CountriesList countries={countries} />
+            </div>
+            <div className="col-md-3">
+              <Routes>
+                <Route path="/country/:countryCode" element={<CountryDetails countries={countries} />} />
+              </Routes>
+            </div>
+          </div>
+        </div>
+
+      }
     </div>
   );
 }
